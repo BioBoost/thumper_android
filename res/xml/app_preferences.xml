@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:key="thumper_settings" android:title="Thumper">
+        <EditTextPreference android:title="NodeJS Server IP" android:key="nodejs_server_ip"/>
+        <EditTextPreference android:key="nodejs_server_port" android:defaultValue="1337" android:title="NodeJS Server Port"/>
+    </PreferenceCategory>
+    
+
+</PreferenceScreen>

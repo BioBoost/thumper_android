@@ -4,4 +4,26 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
+    <Button
+        android:id="@+id/btnThumperControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="113dp"
+        android:text="Thumper Control"
+        android:onClick="onThumperControl" />
+
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnThumperControl"
+        android:layout_marginTop="20dp"
+        android:text="Settings"
+        android:onClick="onSettings" />
+
 </RelativeLayout>
