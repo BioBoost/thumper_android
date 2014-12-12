@@ -7,7 +7,8 @@
     <uses-sdk
         android:minSdkVersion="10"
         android:targetSdkVersion="17" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -30,6 +31,10 @@
         <activity
             android:name=".AppPreferenceActivity"
             android:label="@string/title_activity_app_preference" >
+        </activity>
+        <activity
+            android:name=".OrientationControlActivity"
+            android:label="@string/title_activity_orientation" >
         </activity>
     </application>
 

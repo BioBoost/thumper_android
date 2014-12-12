@@ -7,5 +7,6 @@
     <string name="battery_voltage">Battery Voltage:</string>
     <string name="refresh">Refresh</string>
     <string name="title_activity_app_preference">AppPreferenceActivity</string>
+    <string name="title_activity_orientation">OrientationActivity</string>
 
 </resources>

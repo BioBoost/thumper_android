@@ -20,4 +20,8 @@ public class MainActivity extends Activity {
     public void onSettings(View v) {
     	startActivity(new Intent(this, AppPreferenceActivity.class));
     }
+    
+    public void onOrientation(View v) {
+    	startActivity(new Intent(this, OrientationControlActivity.class));
+    }
 }
