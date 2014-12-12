@@ -31,4 +31,26 @@
         android:text="@string/refresh"
         android:onClick="onRefresh" />
 
+    <Button
+        android:id="@+id/btnForward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/lblBatteryVoltage"
+        android:layout_marginTop="77dp"
+        android:text="Forward"
+        android:onClick="onForward" />
+
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnRefresh"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="111dp"
+        android:text="Stop"
+        android:onClick="onStop" />
+
 </RelativeLayout>
