@@ -1,19 +1,16 @@
 package be.vives.thumper;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class ThumperCommand {
 
-	private double left_motor_speed;
-	private double right_motor_speed;
+	private int left_motor_speed;
+	private int right_motor_speed;
 	
 	public ThumperCommand() {
 		setMotorSpeed(Side.LEFT, 0);
 		setMotorSpeed(Side.RIGHT, 0);
 	}
 	
-	public double getMotorSpeed(Side side) {
+	public int getMotorSpeed(Side side) {
 		if (side == Side.LEFT) {
 			return left_motor_speed;
 		} else {
