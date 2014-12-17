@@ -34,7 +34,8 @@
         </activity>
         <activity
             android:name=".OrientationControlActivity"
-            android:label="@string/title_activity_orientation" >
+            android:label="@string/title_activity_orientation"
+            android:screenOrientation="landscape" >
         </activity>
     </application>
 
