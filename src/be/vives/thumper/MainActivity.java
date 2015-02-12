@@ -16,11 +16,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
     
-    public void onThumperControl(View v) {
+    public void openManualDrive(View v) {
     	startActivity(new Intent(this, ThumperControlActivity.class));
     }
     
-    public void onOrientation(View v) {
+    public void openAutomaticDrive(View v) {
     	startActivity(new Intent(this, OrientationControlActivity.class));
     }
     

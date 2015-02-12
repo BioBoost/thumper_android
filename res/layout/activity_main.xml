@@ -4,26 +4,56 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <Button
-        android:id="@+id/btnThumperControl"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:orientation="horizontal"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="113dp"
-        android:text="Thumper Control"
-        android:onClick="onThumperControl" />
+        android:layout_marginTop="24dp"
+        android:onClick="openAutomaticDrive" >
+        
+        <ImageView
+            android:id="@+id/imgAutomaticTransmission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/automatic_transmission" />
 
-    <Button
-        android:id="@+id/btnOrientation"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/txtAutomaticTransmission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Automatic Drive"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginLeft="12dp"
+        	android:layout_gravity="center" />
+    
+    </LinearLayout>
+  
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/btnSettings"
-        android:layout_marginTop="34dp"
-        android:text="Orientation"
-        android:onClick="onOrientation" />
+        android:layout_below="@+id/linearLayout1"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:onClick="openManualDrive" >
+
+        <ImageView
+            android:id="@+id/imgManualTransmission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/manual_transmission" />
+
+        <TextView
+            android:id="@+id/txtManualTransmission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manual Drive"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginLeft="12dp"
+        	android:layout_gravity="center" />
+
+    </LinearLayout>
 
 </RelativeLayout>
