@@ -8,5 +8,6 @@
     <string name="refresh">Refresh</string>
     <string name="title_activity_app_preference">AppPreferenceActivity</string>
     <string name="title_activity_orientation">OrientationActivity</string>
+    <string name="settings">Settings</string>
 
 </resources>
