@@ -1,56 +1,146 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:gauge="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res/be.vives.thumper"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="12dp"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
-        android:id="@+id/lblBatteryVoltage"
+   <org.codeandmagic.android.gauge.GaugeView
+       android:id="@+id/speedGauge"
+       android:layout_width="156dp"
+       android:layout_height="156dp"
+       android:layout_alignParentTop="true"
+       android:layout_centerHorizontal="true" />
+
+    <SeekBar
+        android:id="@+id/speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/speedGauge"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp" />
+    
+    <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/battery_voltage" />
+        android:orientation="horizontal"
+        android:layout_below="@id/speed"
+        android:layout_centerHorizontal="true" >
 
-    <TextView
-        android:id="@+id/txtBatteryVoltage"
+        <ImageView
+            android:id="@+id/imgForwardLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_gravity="left|top"
+            android:src="@drawable/drive_control_forward_left"
+            android:layout_margin="12dp" />
+
+        <ImageView
+            android:id="@+id/imgForward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_forward"
+            android:layout_margin="12dp" />
+
+        <ImageView
+            android:id="@+id/imgForwardRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_forward_right"
+            android:layout_margin="12dp" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/lblBatteryVoltage"
-        android:text="12V"
-        android:layout_marginLeft="12dp" />
+        android:orientation="horizontal"
+        android:layout_below="@id/linearLayout2"
+        android:layout_centerHorizontal="true" >
 
-    <Button
-        android:id="@+id/btnRefresh"
+        <ImageView
+            android:id="@+id/imgLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_left"
+            android:layout_margin="12dp" />
+
+        <ImageView
+            android:id="@+id/imgStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_stop" />
+
+        <ImageView
+            android:id="@+id/imgRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_right"
+            android:layout_margin="12dp" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/linearLayout3"
+        android:layout_centerHorizontal="true" >
+
+        <ImageView
+            android:id="@+id/imgReverseLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_reverse_left"
+            android:layout_margin="12dp" />
+
+        <ImageView
+            android:id="@+id/imgReverse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_reverse"
+            android:layout_margin="12dp" />
+
+        <ImageView
+            android:id="@+id/imgReverseRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drive_control_reverse_right"
+            android:layout_margin="12dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:text="@string/refresh"
-        android:onClick="onRefresh" />
+        android:orientation="horizontal" >
 
-    <Button
-        android:id="@+id/btnForward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/lblBatteryVoltage"
-        android:layout_marginTop="77dp"
-        android:text="Forward"
-        android:onClick="onForward" />
+        <TextView
+            android:id="@+id/txtBatteryVoltage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Battery level" />
 
-    <Button
-        android:id="@+id/btnStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/btnRefresh"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="111dp"
-        android:text="Stop"
-        android:onClick="onStop" />
-
+        <org.codeandmagic.android.gauge.GaugeView
+            android:id="@+id/batteryVoltageGauge"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="12dp"
+            gauge:showNeedle="false"
+            gauge:showOuterRim="false"
+            gauge:showOuterShadow="true"
+            gauge:showRanges="false"
+            gauge:showText="true"
+            gauge:textUnit="%" />
+    </LinearLayout>
+    
 </RelativeLayout>
