@@ -92,6 +92,7 @@ public class TcpCommunicationChannel extends ThumperCommunicationChannel {
 	
 	@Override
 	public void sendThumperCommand(Context context, ThumperCommand command, IThumperStatusReady callback) {
+		new ThumperCommandSend(context, command, callback).execute();
 	}
 	
 	private class ThumperStatusFetch extends AsyncTask<Void, Void, ThumperStatus> {
@@ -121,6 +122,73 @@ public class TcpCommunicationChannel extends ThumperCommunicationChannel {
                 	String request = ThumperStatus.getRequestSring();
                 	if (mBufferOut != null && !mBufferOut.checkError()) {
                     	mBufferOut.print(request);
+                        mBufferOut.flush();
+                	} else {
+                		Log.e(TAG, "mBufferOut giving error");
+                	}
+
+                    // Read response from TCP server
+                    String statusJson = mBufferIn.readLine();
+                    if (statusJson != null) {
+        				status = new ThumperStatus();
+        				status.fromJson(statusJson);
+        				Log.v(TAG, "Status converted from json");
+                    } else {
+                    	Log.e(TAG, "Status response failed");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "S: Error", e);
+                }
+        		
+        	} else {
+        		Log.e(TAG, "Cannot fetch status from thumper, not connected");
+        	}
+        	
+    		return status;
+        }
+
+        // This is called when doInBackground() is finished
+        protected void onPostExecute(ThumperStatus status) {
+            if (this.callback != null) {
+	    		Log.v(TAG, "Status ready for callback");
+            	callback.onStatusReady(status);
+            }
+        }
+    }
+	
+	private class ThumperCommandSend extends AsyncTask<Void, Void, ThumperStatus> {
+		
+		private static final String TAG = "ThumperCommandSend";
+		
+		// Needed for fetching prefs
+		private Context context;
+		
+		// Callback when result is ready
+		private IThumperStatusReady callback;
+		
+		// Thumper command to send
+		private ThumperCommand command;
+		
+		public ThumperCommandSend(Context context, ThumperCommand command, IThumperStatusReady callback) {
+			this.context = context;
+			this.callback = callback;
+			this.command = command;
+		}		
+		
+        @Override
+        protected ThumperStatus doInBackground(Void... params) {
+    		// Check connection
+    		if (!isConnected()) {
+    			open(context);
+    		}
+
+    		ThumperStatus status = null;
+    		if (isConnected()) {   	
+        		Log.v(TAG, "Sending command to thumper");
+                try {                	
+                    // Send command to TCP server
+                	if (mBufferOut != null && !mBufferOut.checkError()) {
+                    	mBufferOut.print(command.toJson());
                         mBufferOut.flush();
                 	} else {
                 		Log.e(TAG, "mBufferOut giving error");

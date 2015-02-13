@@ -24,9 +24,11 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 
 	private GaugeView batteryVoltageGauge;
 	private GaugeView speedGauge;
+	private SeekBar speedControl;
 
 	private static final double MAX_BATTERY_VOLTAGE = 12;
 	private static final double MIN_BATTERY_VOLTAGE = 7;
+	private static final int MAX_SPEED = 255;
 	
 	private ThumperCommunicationChannel commChannel;
 	
@@ -37,7 +39,8 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 
 		batteryVoltageGauge = (GaugeView)findViewById(R.id.batteryVoltageGauge);
 		speedGauge = (GaugeView)findViewById(R.id.speedGauge);
-		((SeekBar)findViewById(R.id.speed)).setOnSeekBarChangeListener(this);
+		speedControl = ((SeekBar)findViewById(R.id.speed));
+		speedControl.setOnSeekBarChangeListener(this);
 	}
 	
 	@Override
@@ -45,7 +48,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 		super.onResume();
 		
 		// Set speed to 0
-		((SeekBar)findViewById(R.id.speed)).setProgress(0);
+		speedControl.setProgress(0);
 		speedGauge.setTargetValue(0);
 		
 		// Setup TCP communication channel with thumper
@@ -87,8 +90,8 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	public void onForward(View v) {
 		Log.i(TAG, "Forward");
 		ThumperCommand command = new ThumperCommand();
-		command.setMotorSpeed(Side.LEFT, 50);
-		command.setMotorSpeed(Side.RIGHT, 50);
+		command.setMotorSpeed(Side.LEFT, (int)((MAX_SPEED * speedControl.getProgress())/100));
+		command.setMotorSpeed(Side.RIGHT, (int)((MAX_SPEED * speedControl.getProgress())/100));
 		commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 			@Override
 			public void onStatusReady(ThumperStatus status) {
@@ -203,7 +206,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		speedGauge.setTargetValue(((SeekBar)findViewById(R.id.speed)).getProgress());
+		speedGauge.setTargetValue(speedControl.getProgress());
 	}
 
 	@Override
