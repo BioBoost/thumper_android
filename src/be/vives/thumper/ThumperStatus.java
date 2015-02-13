@@ -18,6 +18,13 @@ public class ThumperStatus {
 		this.batteryVoltage = volt;
 	}
 	
+	/*
+	 * Returns a request for status string in JSON format
+	 */
+	public static String getRequestSring() {
+		return "{ \"request\":\"status\" }\r\n\r\n";
+	}
+	
 	public void fromJson(String json) throws JSONException {
 		JSONObject jsonObj = new JSONObject(json);
 		

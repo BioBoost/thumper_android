@@ -43,7 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/drive_control_forward"
-            android:layout_margin="12dp" />
+            android:layout_margin="12dp"
+            android:onClick="onForward" />
 
         <ImageView
             android:id="@+id/imgForwardRight"
@@ -73,7 +74,8 @@
             android:id="@+id/imgStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/drive_control_stop" />
+            android:src="@drawable/drive_control_stop"
+            android:onClick="onStop" />
 
         <ImageView
             android:id="@+id/imgRight"

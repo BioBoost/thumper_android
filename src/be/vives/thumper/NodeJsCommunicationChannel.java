@@ -8,7 +8,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -31,6 +30,19 @@ public class NodeJsCommunicationChannel extends ThumperCommunicationChannel{
 	public void sendThumperCommand(Context context, ThumperCommand command, IThumperStatusReady callback) {
 		new ThumperCommandSend(context, command, callback).execute();
 	}
+
+	@Override
+	public boolean isPersistent() {
+		return false;
+	}
+
+	@Override
+	public boolean isConnected() {
+		return false;
+	}
+
+	@Override
+	public void close() {}
 	
 	private class ThumperStatusFetch extends AsyncTask<Void, Void, ThumperStatus> {
 		
@@ -167,6 +179,5 @@ public class NodeJsCommunicationChannel extends ThumperCommunicationChannel{
             }
         }
     }
-
 }
 

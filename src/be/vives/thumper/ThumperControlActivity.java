@@ -1,9 +1,14 @@
 package be.vives.thumper;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import android.R.bool;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,43 +18,78 @@ import org.codeandmagic.android.gauge.GaugeView;
 
 public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBarChangeListener {
 
+	private static final String TAG = "ManualThumperControl";
+
 	private GaugeView batteryVoltageGauge;
 	private GaugeView speedGauge;
+
+	private static final double MAX_BATTERY_VOLTAGE = 12;
+	private static final double MIN_BATTERY_VOLTAGE = 7;
+	
+	private ThumperCommunicationChannel commChannel;
+	
+//	private boolean[][] driveControl;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_thumper_control);
-		batteryVoltageGauge = (GaugeView)findViewById(R.id.batteryVoltageGauge);
-		batteryVoltageGauge.setTargetValue(15);
-		speedGauge = (GaugeView)findViewById(R.id.speedGauge);
-		speedGauge.setTargetValue(0);
-		((SeekBar)findViewById(R.id.speed)).setOnSeekBarChangeListener(this);
-		((SeekBar)findViewById(R.id.speed)).setProgress(0);
-	}
 
-	public void onRefresh(View v) {
-		ThumperCommunicationChannel thumper = new NodeJsCommunicationChannel();
-		thumper.getThumperStatus(this, new IThumperStatusReady() {
+		batteryVoltageGauge = (GaugeView)findViewById(R.id.batteryVoltageGauge);
+		speedGauge = (GaugeView)findViewById(R.id.speedGauge);
+		((SeekBar)findViewById(R.id.speed)).setOnSeekBarChangeListener(this);
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		// Set speed to 0
+		((SeekBar)findViewById(R.id.speed)).setProgress(0);
+		speedGauge.setTargetValue(0);
+		
+		// Setup TCP communication channel with thumper
+		commChannel = new TcpCommunicationChannel(this);
+		
+		// Get current status of thumper
+		getThumperStatus();
+	}
+	
+	private void getThumperStatus() {
+		commChannel.getThumperStatus(getApplicationContext(), new IThumperStatusReady() {
 			@Override
 			public void onStatusReady(ThumperStatus status) {
 				if (status != null) {
 					populateStatusView(status);
+				} else {
+					Log.d(TAG, "Status message nil");
 				}
 			}
 		});
 	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		// Close the communication channel
+		commChannel.close();
+	}
 
-	private void populateStatusView(ThumperStatus status) {
-		//((TextView)findViewById(R.id.txtBatteryVoltage)).setText(status.getBatteryVoltage() + "V");
+	private void populateStatusView(ThumperStatus status) {		
+		// Battery voltage
+		double voltage = status.getBatteryVoltage();
+		Log.i(TAG, "Battery voltage = " + voltage);
+		int percentage = (int)(100 * (voltage - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE));
+		batteryVoltageGauge.setTargetValue(percentage);
 	}
 
 	public void onForward(View v) {
-		ThumperCommunicationChannel thumper = new NodeJsCommunicationChannel();
+		Log.i(TAG, "Forward");
 		ThumperCommand command = new ThumperCommand();
 		command.setMotorSpeed(Side.LEFT, 50);
 		command.setMotorSpeed(Side.RIGHT, 50);
-		thumper.sendThumperCommand(this, command, new IThumperStatusReady() {
+		commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 			@Override
 			public void onStatusReady(ThumperStatus status) {
 				if (status != null) {
@@ -60,11 +100,11 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	}
 
 	public void onStop(View v) {
-		ThumperCommunicationChannel thumper = new NodeJsCommunicationChannel();
+		Log.i(TAG, "Stop");
 		ThumperCommand command = new ThumperCommand();
 		command.setMotorSpeed(Side.LEFT, 0);
 		command.setMotorSpeed(Side.RIGHT, 0);
-		thumper.sendThumperCommand(this, command, new IThumperStatusReady() {
+		commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 			@Override
 			public void onStatusReady(ThumperStatus status) {
 				if (status != null) {
@@ -77,7 +117,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 
-	    // get masked (not specific to a pointer) action
+	    // Get masked (not specific to a pointer) action
 	    int action = MotionEventCompat.getActionMasked(event);
 
 	    // Get the index of the pointer associated with the action.
@@ -167,13 +207,8 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	}
 
 	@Override
-	public void onStartTrackingTouch(SeekBar seekBar) {
-		// TODO Auto-generated method stub
-	}
+	public void onStartTrackingTouch(SeekBar seekBar) { }
 
 	@Override
-	public void onStopTrackingTouch(SeekBar seekBar) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onStopTrackingTouch(SeekBar seekBar) { }
 }
