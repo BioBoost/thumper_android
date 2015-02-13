@@ -1,4 +1,4 @@
-package be.vives.thumper;
+package be.vives.thumper.trex;
 
 public class ThumperCommand {
 

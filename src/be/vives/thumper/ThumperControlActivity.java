@@ -13,6 +13,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import be.vives.thumper.communication.channel.TcpCommunicationChannel;
+import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
+import be.vives.thumper.trex.IThumperStatusReady;
+import be.vives.thumper.trex.Side;
+import be.vives.thumper.trex.ThumperCommand;
+import be.vives.thumper.trex.ThumperStatus;
 
 import org.codeandmagic.android.gauge.GaugeView;
 

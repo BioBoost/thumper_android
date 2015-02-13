@@ -1,4 +1,4 @@
-package be.vives.thumper;
+package be.vives.thumper.communication.channel;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,6 +8,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+
+import be.vives.thumper.trex.IThumperStatusReady;
+import be.vives.thumper.trex.ThumperCommand;
+import be.vives.thumper.trex.ThumperStatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;

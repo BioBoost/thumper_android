@@ -1,4 +1,4 @@
-package be.vives.thumper;
+package be.vives.thumper.trex;
 
 import org.json.JSONException;
 import org.json.JSONObject;

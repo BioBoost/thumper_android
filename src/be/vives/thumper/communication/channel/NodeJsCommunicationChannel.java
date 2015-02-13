@@ -1,4 +1,4 @@
-package be.vives.thumper;
+package be.vives.thumper.communication.channel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +13,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
+
+import be.vives.thumper.trex.IThumperStatusReady;
+import be.vives.thumper.trex.ThumperCommand;
+import be.vives.thumper.trex.ThumperStatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
