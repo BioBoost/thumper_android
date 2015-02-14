@@ -26,8 +26,8 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	private GaugeView speedGauge;
 	private SeekBar speedControl;
 
-	private static final double MAX_BATTERY_VOLTAGE = 12;
-	private static final double MIN_BATTERY_VOLTAGE = 7;
+	private static final double MAX_BATTERY_VOLTAGE = 8.4;
+	private static final double MIN_BATTERY_VOLTAGE = 7.2;
 	private static final int MAX_SPEED = 255;
 	
 	private ThumperCommunicationChannel commChannel;

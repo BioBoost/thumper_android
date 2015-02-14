@@ -26,7 +26,8 @@
         </activity>
         <activity
             android:name=".ThumperControlActivity"
-            android:label="@string/title_activity_thumper_control" >
+            android:label="@string/title_activity_thumper_control"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".AppPreferenceActivity"
