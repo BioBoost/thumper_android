@@ -1,6 +1,9 @@
 package be.vives.thumper;
 
 //Based on: https://github.com/kplatfoot/android-rotation-sensor-sample
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,7 +15,7 @@ import android.view.WindowManager;
 public class Orientation implements SensorEventListener {
 
 	private static final String TAG = "Orientation";
-	private static final int SENSOR_DELAY_MICROS = 200 * 1000;	// 200ms
+	private static final int SENSOR_DELAY_MICROS = 100 * 1000;	// 100ms
 	
 	private final SensorManager mSensorManager;
 	private final Sensor mRotationSensor;
@@ -21,12 +24,16 @@ public class Orientation implements SensorEventListener {
 	private int mLastAccuracy;
 	private OrientationChangeListener mListener;
 	
-	public Orientation(SensorManager sensorManager, WindowManager windowManager) {
+	private Context context;
+	
+	public Orientation(SensorManager sensorManager, WindowManager windowManager, Context context) {
 		mSensorManager = sensorManager;
 		mWindowManager = windowManager;
 		
 		// Can be null if the sensor hardware is not available
 		mRotationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		
+		this.context = context;
 	}
 	
 	public void startListening(OrientationChangeListener listener) {
@@ -38,7 +45,11 @@ public class Orientation implements SensorEventListener {
 			Log.w(TAG, "Rotation vector sensor not available; will not provide orientation data.");
 			return;
 		}
-		mSensorManager.registerListener(this, mRotationSensor, SENSOR_DELAY_MICROS);
+
+		SharedPreferences appPrefs = context.getSharedPreferences("be.vives.thumper_preferences", Context.MODE_PRIVATE);
+		int delay = Integer.parseInt(appPrefs.getString("automatic_drive_refresh_time", "250"));
+		
+		mSensorManager.registerListener(this, mRotationSensor, delay*1000);
 	}
 	
 	public void stopListening() {

@@ -3,8 +3,11 @@
     <PreferenceCategory android:key="thumper_settings" android:title="Thumper">
         <EditTextPreference android:title="NodeJS Server IP" android:key="nodejs_server_ip"/>
         <EditTextPreference android:key="nodejs_server_port" android:defaultValue="1337" android:title="NodeJS Server Port"/>
-        <EditTextPreference android:title="TCP Server IP" android:key="tcp_server_ip"/>
-        <EditTextPreference android:key="tcp_server_port" android:defaultValue="1338" android:title="TCP Server Port"/>
+        <EditTextPreference android:title="TCP Server IP" android:key="tcp_server_ip"/><EditTextPreference android:key="tcp_server_port" android:defaultValue="1338" android:title="TCP Server Port"/>
+        
+    </PreferenceCategory>
+    <PreferenceCategory android:key="automatic_drive" android:title="Automatic Drive">
+        <EditTextPreference android:title="Refresh Time (ms)" android:defaultValue="250" android:key="automatic_drive_refresh_time"/>
     </PreferenceCategory>
     
 

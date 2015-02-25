@@ -1,6 +1,14 @@
 package be.vives.thumper;
 
+import be.vives.thumper.communication.channel.TcpCommunicationChannel;
+import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
+import be.vives.thumper.trex.IThumperStatusReady;
+import be.vives.thumper.trex.Side;
+import be.vives.thumper.trex.ThumperCommand;
+import be.vives.thumper.trex.ThumperStatus;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -16,12 +24,16 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	private boolean leftIsHeld;
 	private boolean rightIsHeld;
 	
+	private ThumperCommunicationChannel commChannel;
+	
+	private int refreshDelay;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_orientation_control);
 
-	    mOrientation = new Orientation((SensorManager) getSystemService(Activity.SENSOR_SERVICE), getWindow().getWindowManager());
+	    mOrientation = new Orientation((SensorManager) getSystemService(Activity.SENSOR_SERVICE), getWindow().getWindowManager(), this);
 
 	    // Clear left and right indicators
 	    leftIsHeld = false;
@@ -123,20 +135,64 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		// Setup TCP communication channel with thumper
+		commChannel = new TcpCommunicationChannel(this);
+
 		mOrientation.startListening(this);
+		
+		SharedPreferences appPrefs = getApplicationContext().getSharedPreferences("be.vives.thumper_preferences", Context.MODE_PRIVATE);
+		refreshDelay = Integer.parseInt(appPrefs.getString("automatic_drive_refresh_time", "250"));
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
 		mOrientation.stopListening();
+		
+		// Close the communication channel
+		commChannel.close();
 	}
 
+	private long lastTimeUpdate;
+	
 	@Override
 	public void onOrientationChanged(float pitch, float roll) {
 		if (leftIsHeld && rightIsHeld) {
 			((TextView)this.findViewById(R.id.txtPitch)).setText(pitch + "");
 			((TextView)this.findViewById(R.id.txtRoll)).setText(roll + "");
+			
+			int MIN_PITCH = -20;
+			int MAX_PITCH = -80;
+			int PITCH_RANGE = MAX_PITCH - MIN_PITCH;
+			
+			int MIN_SPEED = 0;
+			int MAX_SPEED = 200;
+			int SPEED_RANGE = MAX_SPEED - MIN_SPEED;
+
+			pitch = Math.max(MAX_PITCH, pitch);
+			pitch = Math.min(MIN_PITCH, pitch);
+			
+			
+			double pitch_mult = ((pitch - MIN_PITCH) / PITCH_RANGE);		// Between 0 and 1
+			int base_speed = (int)((pitch_mult * SPEED_RANGE) + MIN_SPEED);
+			
+			long currentTime = System.currentTimeMillis();
+			long time_delta = currentTime - lastTimeUpdate;
+			
+			if (time_delta >= refreshDelay) {
+				
+				ThumperCommand command = new ThumperCommand();
+				command.setMotorSpeed(Side.LEFT, base_speed);
+				command.setMotorSpeed(Side.RIGHT, base_speed);
+				commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
+					@Override
+					public void onStatusReady(ThumperStatus status) {
+					}
+				});
+				
+				lastTimeUpdate = System.currentTimeMillis();
+			}
 		}
 	}
 }
