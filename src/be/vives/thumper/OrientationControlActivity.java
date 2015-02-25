@@ -25,8 +25,10 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	private boolean rightIsHeld;
 	
 	private ThumperCommunicationChannel commChannel;
-	
+
+	private long lastTimeUpdate;
 	private int refreshDelay;
+	private boolean stopped;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +36,6 @@ public class OrientationControlActivity extends Activity implements OrientationC
 		setContentView(R.layout.activity_orientation_control);
 
 	    mOrientation = new Orientation((SensorManager) getSystemService(Activity.SENSOR_SERVICE), getWindow().getWindowManager(), this);
-
-	    // Clear left and right indicators
-	    leftIsHeld = false;
-	    rightIsHeld = false;
 	}
 	
 	@Override
@@ -139,6 +137,11 @@ public class OrientationControlActivity extends Activity implements OrientationC
 		// Setup TCP communication channel with thumper
 		commChannel = new TcpCommunicationChannel(this);
 
+	    // Clear left and right indicators
+	    leftIsHeld = false;
+	    rightIsHeld = false;
+	    stopped = true;		
+		
 		mOrientation.startListening(this);
 		
 		SharedPreferences appPrefs = getApplicationContext().getSharedPreferences("be.vives.thumper_preferences", Context.MODE_PRIVATE);
@@ -152,30 +155,82 @@ public class OrientationControlActivity extends Activity implements OrientationC
 		
 		// Close the communication channel
 		commChannel.close();
+		
+		sendStop();
+		stopped = true;
+		((TextView)this.findViewById(R.id.txtStopped)).setText("Stopped");
 	}
-
-	private long lastTimeUpdate;
+	
+	private void sendStop() {
+		ThumperCommand command = new ThumperCommand();
+		command.setMotorSpeed(Side.LEFT, 0);
+		command.setMotorSpeed(Side.RIGHT, 0);
+		commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
+			@Override
+			public void onStatusReady(ThumperStatus status) {
+			}
+		});
+	}
 	
 	@Override
 	public void onOrientationChanged(float pitch, float roll) {
 		if (leftIsHeld && rightIsHeld) {
+			// Indicate driving control active
+			((TextView)this.findViewById(R.id.txtStopped)).setText("Driving");
+			stopped = false;
+			
 			((TextView)this.findViewById(R.id.txtPitch)).setText(pitch + "");
 			((TextView)this.findViewById(R.id.txtRoll)).setText(roll + "");
 			
+			// We need to rescale the pitch to our speed range first
+
+			// Device placement 
+			int MAX_PITCH = -60;
 			int MIN_PITCH = -20;
-			int MAX_PITCH = -80;
 			int PITCH_RANGE = MAX_PITCH - MIN_PITCH;
-			
-			int MIN_SPEED = 0;
-			int MAX_SPEED = 200;
+
+			// Actual speed
+			int MAX_SPEED = 150;
+			int MIN_SPEED = -150;
 			int SPEED_RANGE = MAX_SPEED - MIN_SPEED;
 
+			// Limit pitch
 			pitch = Math.max(MAX_PITCH, pitch);
 			pitch = Math.min(MIN_PITCH, pitch);
 			
-			
 			double pitch_mult = ((pitch - MIN_PITCH) / PITCH_RANGE);		// Between 0 and 1
 			int base_speed = (int)((pitch_mult * SPEED_RANGE) + MIN_SPEED);
+			
+			// Now we need to add turn control
+			
+			// Device placement 
+			int MAX_ROLL = 40;
+			int MIN_ROLL = -40;
+			int ROLL_RANGE = MAX_ROLL - MIN_ROLL;
+
+			// Speed control for thumper itself
+			int MAX_TURN = 100;
+			int MIN_TURN = -100;
+			int TURN_RANGE = MAX_TURN - MIN_TURN;
+
+			// Limit roll
+			roll = Math.min(MAX_ROLL, roll);
+			roll = Math.max(MIN_ROLL, roll);
+			
+			double roll_mult = ((roll - MIN_ROLL) / ROLL_RANGE);			// Between 0 and 1
+			int base_turn = (int)((roll_mult * TURN_RANGE) + MIN_TURN);
+			
+			int left_speed = base_speed - base_turn;
+			int right_speed = base_speed + base_turn;
+			
+			// Make sure limits are not exceeded
+			left_speed = Math.min(MAX_SPEED, left_speed);
+			left_speed = Math.max(MIN_SPEED, left_speed);
+			right_speed = Math.min(MAX_SPEED, right_speed);
+			right_speed = Math.max(MIN_SPEED, right_speed);
+
+			((TextView)this.findViewById(R.id.txtLeftTurnSpeed)).setText(left_speed + "");
+			((TextView)this.findViewById(R.id.txtRightTurnSpeed)).setText(right_speed + "");
 			
 			long currentTime = System.currentTimeMillis();
 			long time_delta = currentTime - lastTimeUpdate;
@@ -183,8 +238,8 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			if (time_delta >= refreshDelay) {
 				
 				ThumperCommand command = new ThumperCommand();
-				command.setMotorSpeed(Side.LEFT, base_speed);
-				command.setMotorSpeed(Side.RIGHT, base_speed);
+				command.setMotorSpeed(Side.LEFT, left_speed);
+				command.setMotorSpeed(Side.RIGHT, right_speed);
 				commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 					@Override
 					public void onStatusReady(ThumperStatus status) {
@@ -193,6 +248,13 @@ public class OrientationControlActivity extends Activity implements OrientationC
 				
 				lastTimeUpdate = System.currentTimeMillis();
 			}
+			
+		} else {
+			if (!stopped) {
+				sendStop();
+				stopped = true;
+				((TextView)this.findViewById(R.id.txtStopped)).setText("Stopped");
+			} // else maybe status update every x seconds ?
 		}
 	}
 }

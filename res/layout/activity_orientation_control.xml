@@ -4,46 +4,12 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
-        android:id="@+id/txtManualTransmission"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="20dp"
-        android:text="Pitch: " />
-
-    <TextView
-        android:id="@+id/txtPitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/txtManualTransmission"
-        android:layout_toRightOf="@+id/txtManualTransmission"
-        android:text="xxxxxxxxx" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/txtManualTransmission"
-        android:layout_marginTop="36dp"
-        android:text="Roll: " />
-
-    <TextView
-        android:id="@+id/txtRoll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_toRightOf="@+id/textView2"
-        android:text="xxxxxxxx" />
-
     <ImageView
         android:id="@+id/hold_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="16dp"
         android:src="@drawable/ic_hold_false" />
@@ -56,5 +22,79 @@
         android:layout_alignTop="@+id/hold_left"
         android:layout_marginRight="16dp"
         android:src="@drawable/ic_hold_false" />
+
+    <TextView
+        android:id="@+id/txtManualTransmission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Pitch: " />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/txtManualTransmission"
+        android:text="Roll: " />
+
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Pitch: " />
+
+    <TextView
+        android:id="@+id/txtLeftTurnSpeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/hold_left"
+        android:layout_alignLeft="@+id/hold_left"
+        android:layout_alignRight="@+id/hold_left"
+        android:layout_marginBottom="31dp"
+        android:gravity="center_horizontal"
+        android:text="200"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/txtRightTurnSpeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/txtLeftTurnSpeed"
+        android:layout_alignBottom="@+id/txtLeftTurnSpeed"
+        android:layout_alignLeft="@+id/hold_right"
+        android:layout_alignRight="@+id/hold_right"
+        android:gravity="center_horizontal"
+        android:text="200"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/txtPitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView2"
+        android:layout_toRightOf="@+id/txtManualTransmission"
+        android:text="xxxxxxxxx" />
+
+    <TextView
+        android:id="@+id/txtRoll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textView2"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_toRightOf="@+id/txtManualTransmission"
+        android:text="xxxxxxxx" />
+
+    <TextView
+        android:id="@+id/txtStopped"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/txtRightTurnSpeed"
+        android:layout_centerHorizontal="true"
+        android:text="STOPPED"
+        android:textSize="24sp" />
 
 </RelativeLayout>
