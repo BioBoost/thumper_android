@@ -1,5 +1,7 @@
 package be.vives.thumper;
 
+import org.codeandmagic.android.gauge.GaugeView;
+
 import be.vives.thumper.communication.channel.TcpCommunicationChannel;
 import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
 import be.vives.thumper.trex.IThumperStatusReady;
@@ -9,6 +11,7 @@ import be.vives.thumper.trex.ThumperStatus;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -29,6 +32,28 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	private long lastTimeUpdate;
 	private int refreshDelay;
 	private boolean stopped;
+	
+	// Device placement 
+	private static int MAX_PITCH = -60;
+	private static int MIN_PITCH = -20;
+	private static int PITCH_RANGE = MAX_PITCH - MIN_PITCH;
+
+	// Actual speed
+	private static int MAX_SPEED = 150;
+	private static int MIN_SPEED = -150;
+	private static int SPEED_RANGE = MAX_SPEED - MIN_SPEED;
+	
+	// Device placement 
+	private static int MAX_ROLL = 40;
+	private static int MIN_ROLL = -40;
+	private static int ROLL_RANGE = MAX_ROLL - MIN_ROLL;
+
+	// Speed control for thumper itself
+	private static int MAX_TURN = 100;
+	private static int MIN_TURN = -100;
+	private static int TURN_RANGE = MAX_TURN - MIN_TURN;
+	
+	private static double BATTERY_THRESHOLD = 7.0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +166,8 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	    leftIsHeld = false;
 	    rightIsHeld = false;
 	    stopped = true;		
+		((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
+		((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
 		
 		mOrientation.startListening(this);
 		
@@ -179,20 +206,7 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			((TextView)this.findViewById(R.id.txtStopped)).setText("Driving");
 			stopped = false;
 			
-			((TextView)this.findViewById(R.id.txtPitch)).setText(pitch + "");
-			((TextView)this.findViewById(R.id.txtRoll)).setText(roll + "");
-			
 			// We need to rescale the pitch to our speed range first
-
-			// Device placement 
-			int MAX_PITCH = -60;
-			int MIN_PITCH = -20;
-			int PITCH_RANGE = MAX_PITCH - MIN_PITCH;
-
-			// Actual speed
-			int MAX_SPEED = 150;
-			int MIN_SPEED = -150;
-			int SPEED_RANGE = MAX_SPEED - MIN_SPEED;
 
 			// Limit pitch
 			pitch = Math.max(MAX_PITCH, pitch);
@@ -202,16 +216,6 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			int base_speed = (int)((pitch_mult * SPEED_RANGE) + MIN_SPEED);
 			
 			// Now we need to add turn control
-			
-			// Device placement 
-			int MAX_ROLL = 40;
-			int MIN_ROLL = -40;
-			int ROLL_RANGE = MAX_ROLL - MIN_ROLL;
-
-			// Speed control for thumper itself
-			int MAX_TURN = 100;
-			int MIN_TURN = -100;
-			int TURN_RANGE = MAX_TURN - MIN_TURN;
 
 			// Limit roll
 			roll = Math.min(MAX_ROLL, roll);
@@ -228,9 +232,9 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			left_speed = Math.max(MIN_SPEED, left_speed);
 			right_speed = Math.min(MAX_SPEED, right_speed);
 			right_speed = Math.max(MIN_SPEED, right_speed);
-
-			((TextView)this.findViewById(R.id.txtLeftTurnSpeed)).setText(left_speed + "");
-			((TextView)this.findViewById(R.id.txtRightTurnSpeed)).setText(right_speed + "");
+			
+			((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(100*Math.abs(left_speed)/MAX_SPEED);
+			((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(100*Math.abs(right_speed)/MAX_SPEED);
 			
 			long currentTime = System.currentTimeMillis();
 			long time_delta = currentTime - lastTimeUpdate;
@@ -243,17 +247,26 @@ public class OrientationControlActivity extends Activity implements OrientationC
 				commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 					@Override
 					public void onStatusReady(ThumperStatus status) {
+						double voltage = status.getBatteryVoltage();
+						TextView view = (TextView)findViewById(R.id.txtBatteryVoltage);
+						view.setText(voltage + "V");
+						if (voltage < BATTERY_THRESHOLD) {
+							view.setTextColor(Color.RED);
+						} else {
+							view.setTextColor(Color.GREEN);
+						}						
 					}
 				});
 				
 				lastTimeUpdate = System.currentTimeMillis();
 			}
-			
 		} else {
 			if (!stopped) {
 				sendStop();
 				stopped = true;
 				((TextView)this.findViewById(R.id.txtStopped)).setText("Stopped");
+				((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
+				((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
 			} // else maybe status update every x seconds ?
 		}
 	}
