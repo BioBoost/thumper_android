@@ -4,7 +4,7 @@ import android.content.Context;
 import be.vives.thumper.trex.IThumperStatusReady;
 import be.vives.thumper.trex.ThumperCommand;
 
-public class FakeCommunicationChannel extends ThumperCommunicationChannel {
+public class FakeCommunicationChannel implements ICommunicationChannel {
 
 	@Override
 	public void getThumperStatus(Context context, IThumperStatusReady callback) {

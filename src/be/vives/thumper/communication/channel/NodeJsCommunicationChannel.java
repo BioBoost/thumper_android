@@ -23,7 +23,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class NodeJsCommunicationChannel extends ThumperCommunicationChannel{
+public class NodeJsCommunicationChannel implements ICommunicationChannel{
 
 	@Override
 	public void getThumperStatus(Context context, IThumperStatusReady callback) {

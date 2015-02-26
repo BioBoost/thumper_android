@@ -18,7 +18,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class TcpCommunicationChannel extends ThumperCommunicationChannel {
+public class TcpCommunicationChannel implements ICommunicationChannel {
 	
 	private static final String TAG = "TcpCommunicationChannel";
 		

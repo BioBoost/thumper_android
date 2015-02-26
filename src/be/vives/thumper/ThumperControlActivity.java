@@ -12,8 +12,8 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import be.vives.thumper.communication.channel.FakeCommunicationChannel;
+import be.vives.thumper.communication.channel.ICommunicationChannel;
 import be.vives.thumper.communication.channel.TcpCommunicationChannel;
-import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
 import be.vives.thumper.trex.IThumperStatusReady;
 import be.vives.thumper.trex.Side;
 import be.vives.thumper.trex.ThumperCommand;
@@ -39,7 +39,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	private static int LEFT = 2;
 	private static int RIGHT = 3;	
 	
-	private ThumperCommunicationChannel commChannel;
+	private ICommunicationChannel commChannel;
 
 	private long lastTimeUpdate;
 	private int refreshDelay;
