@@ -38,7 +38,7 @@ public class TcpCommunicationChannel implements ICommunicationChannel {
 
 	@Override
 	public boolean isConnected() {
-    	if (socket != null && mBufferOut != null && mBufferIn != null) {
+    	if (socket != null && socket.isConnected() && mBufferOut != null && mBufferIn != null) {
     		return true;
     	} else {
     		return false;
@@ -112,6 +112,7 @@ public class TcpCommunicationChannel implements ICommunicationChannel {
         protected ThumperStatus doInBackground(Void... params) {
     		// Check connection
     		if (!isConnected()) {
+    			close();	// First make sure all is closed
     			open(context);
     		}
 
@@ -179,6 +180,7 @@ public class TcpCommunicationChannel implements ICommunicationChannel {
         protected ThumperStatus doInBackground(Void... params) {
     		// Check connection
     		if (!isConnected()) {
+    			close();	// First make sure all is closed
     			open(context);
     		}
 

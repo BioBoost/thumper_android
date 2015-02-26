@@ -1,6 +1,8 @@
 package be.vives.thumper;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -44,7 +46,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	private boolean stopped;
 	
 	private static double BATTERY_THRESHOLD = 7.0;
-	
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -64,6 +66,9 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	protected void onResume() {
 		super.onResume();
 		
+		SharedPreferences appPrefs = getApplicationContext().getSharedPreferences("be.vives.thumper_preferences", Context.MODE_PRIVATE);
+		refreshDelay = Integer.parseInt(appPrefs.getString("automatic_drive_refresh_time", "500"));
+		
 		// Set speed to 0
 		speedControl.setProgress(0);
 		gaugeLeft.setTargetValue(0);
@@ -80,7 +85,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
         }
         
 		// Get current status of thumper
-		getThumperStatus();
+        getThumperStatus();
 	}
 	
 	private void getThumperStatus() {
@@ -100,16 +105,18 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	protected void onPause() {
 		super.onPause();
 		
-		// Close the communication channel
-		commChannel.close();
-		
+		// Clear all held controls
         for (int i = 0; i < 4; i++) {
     		heldButtons[i] = false;
         }
 		
+        // Make sure thumper is stopped
 		sendStop();
 		stopped = true;
 		setDrivingState();
+		
+		// Close the communication channel
+		commChannel.close();
 	}
 	
 	private void sendStop() {
@@ -304,12 +311,10 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 				lastTimeUpdate = System.currentTimeMillis();
 			}
 		} else {
-			if (!stopped) {
-				sendStop();
-				stopped = true;
-				((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
-				((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
-			} // else maybe status update every x seconds ?
+			sendStop();
+			stopped = true;
+			((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
+			((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
 		}
 		setDrivingState();
 	}

@@ -22,4 +22,11 @@ public class ThumperCommunicationChannel {
 		}
 		return channel;
 	}
+	
+	public static void killInstance() {
+		if (channel != null) {
+			channel.close();
+			channel = null;
+		}
+	}
 }
