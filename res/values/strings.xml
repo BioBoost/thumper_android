@@ -10,4 +10,13 @@
     <string name="title_activity_orientation">OrientationActivity</string>
     <string name="settings">Settings</string>
 
+    
+	<string-array name="communication_channel_values">
+	    <item>tcp_channel</item>
+	    <item>fake_channel</item>
+	</string-array>
+	<string-array name="communication_channels">
+	    <item>TCP channel</item>
+	    <item>Fake channel</item>
+	</string-array>
 </resources>

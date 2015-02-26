@@ -3,7 +3,7 @@ package be.vives.thumper;
 import org.codeandmagic.android.gauge.GaugeView;
 
 import be.vives.thumper.communication.channel.ICommunicationChannel;
-import be.vives.thumper.communication.channel.TcpCommunicationChannel;
+import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
 import be.vives.thumper.trex.IThumperStatusReady;
 import be.vives.thumper.trex.Side;
 import be.vives.thumper.trex.ThumperCommand;
@@ -159,8 +159,8 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	protected void onResume() {
 		super.onResume();
 		
-		// Setup TCP communication channel with thumper
-		commChannel = new TcpCommunicationChannel(this);
+		// Setup communication channel with thumper
+	    commChannel = ThumperCommunicationChannel.getInstance(this);
 
 	    // Clear left and right indicators
 	    leftIsHeld = false;

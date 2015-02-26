@@ -7,13 +7,11 @@ import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import be.vives.thumper.communication.channel.FakeCommunicationChannel;
 import be.vives.thumper.communication.channel.ICommunicationChannel;
-import be.vives.thumper.communication.channel.TcpCommunicationChannel;
+import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
 import be.vives.thumper.trex.IThumperStatusReady;
 import be.vives.thumper.trex.Side;
 import be.vives.thumper.trex.ThumperCommand;
@@ -75,8 +73,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	    lastTimeUpdate = 0;
 		
 		// Setup TCP communication channel with thumper
-//		commChannel = new TcpCommunicationChannel(this);
-	    commChannel = new FakeCommunicationChannel();
+	    commChannel = ThumperCommunicationChannel.getInstance(this);
 		
         for (int i = 0; i < 4; i++) {
     		heldButtons[i] = false;
@@ -291,14 +288,16 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 				commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
 					@Override
 					public void onStatusReady(ThumperStatus status) {
-						double voltage = status.getBatteryVoltage();
-						TextView view = (TextView)findViewById(R.id.txtBatteryVoltage);
-						view.setText(voltage + "V");
-						if (voltage < BATTERY_THRESHOLD) {
-							view.setTextColor(Color.RED);
-						} else {
-							view.setTextColor(Color.GREEN);
-						}						
+						if (status != null) {
+							double voltage = status.getBatteryVoltage();
+							TextView view = (TextView)findViewById(R.id.txtBatteryVoltage);
+							view.setText(voltage + "V");
+							if (voltage < BATTERY_THRESHOLD) {
+								view.setTextColor(Color.RED);
+							} else {
+								view.setTextColor(Color.GREEN);
+							}	
+						}
 					}
 				});
 				
