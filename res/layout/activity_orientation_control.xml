@@ -43,7 +43,7 @@
         android:src="@drawable/ic_hold_false" />
 
     <TextView
-        android:id="@+id/txtStopped"
+        android:id="@+id/txtIsStopped"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/hold_left"

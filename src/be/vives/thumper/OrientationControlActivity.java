@@ -185,7 +185,7 @@ public class OrientationControlActivity extends Activity implements OrientationC
 		
 		sendStop();
 		stopped = true;
-		((TextView)this.findViewById(R.id.txtStopped)).setText("Stopped");
+		((TextView)this.findViewById(R.id.txtIsStopped)).setText("Stopped");
 	}
 	
 	private void sendStop() {
@@ -203,7 +203,7 @@ public class OrientationControlActivity extends Activity implements OrientationC
 	public void onOrientationChanged(float pitch, float roll) {
 		if (leftIsHeld && rightIsHeld) {
 			// Indicate driving control active
-			((TextView)this.findViewById(R.id.txtStopped)).setText("Driving");
+			((TextView)this.findViewById(R.id.txtIsStopped)).setText("Driving");
 			stopped = false;
 			
 			// We need to rescale the pitch to our speed range first
@@ -224,8 +224,8 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			double roll_mult = ((roll - MIN_ROLL) / ROLL_RANGE);			// Between 0 and 1
 			int base_turn = (int)((roll_mult * TURN_RANGE) + MIN_TURN);
 			
-			int left_speed = base_speed - base_turn;
-			int right_speed = base_speed + base_turn;
+			int left_speed = base_speed + base_turn;
+			int right_speed = base_speed - base_turn;
 			
 			// Make sure limits are not exceeded
 			left_speed = Math.min(MAX_SPEED, left_speed);
@@ -264,7 +264,7 @@ public class OrientationControlActivity extends Activity implements OrientationC
 			if (!stopped) {
 				sendStop();
 				stopped = true;
-				((TextView)this.findViewById(R.id.txtStopped)).setText("Stopped");
+				((TextView)this.findViewById(R.id.txtIsStopped)).setText("Stopped");
 				((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
 				((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
 			} // else maybe status update every x seconds ?

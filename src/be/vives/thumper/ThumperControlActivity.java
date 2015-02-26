@@ -1,6 +1,7 @@
 package be.vives.thumper;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
@@ -9,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
+import be.vives.thumper.communication.channel.FakeCommunicationChannel;
 import be.vives.thumper.communication.channel.TcpCommunicationChannel;
 import be.vives.thumper.communication.channel.ThumperCommunicationChannel;
 import be.vives.thumper.trex.IThumperStatusReady;
@@ -22,25 +25,41 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 
 	private static final String TAG = "ManualThumperControl";
 
-	private GaugeView batteryVoltageGauge;
-	private GaugeView speedGauge;
 	private SeekBar speedControl;
+	private GaugeView gaugeLeft;
+	private GaugeView gaugeRight;
 
-	private static final double MAX_BATTERY_VOLTAGE = 8.4;
-	private static final double MIN_BATTERY_VOLTAGE = 7.2;
-	private static final int MAX_SPEED = 255;
+	private static final int MAX_SPEED = 200;
+	private static final int TURN_SPEED = 50;
+	
+	private boolean heldButtons[];
+
+	private static int FORWARD = 0;
+	private static int REVERSE = 1;
+	private static int LEFT = 2;
+	private static int RIGHT = 3;	
 	
 	private ThumperCommunicationChannel commChannel;
+
+	private long lastTimeUpdate;
+	private int refreshDelay;
+	private boolean stopped;
+	
+	private static double BATTERY_THRESHOLD = 7.0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_thumper_control);
 
-		batteryVoltageGauge = (GaugeView)findViewById(R.id.batteryVoltageGauge);
-		speedGauge = (GaugeView)findViewById(R.id.speedGauge);
 		speedControl = ((SeekBar)findViewById(R.id.speed));
 		speedControl.setOnSeekBarChangeListener(this);
+		speedControl.setMax(MAX_SPEED);
+
+		gaugeLeft = ((GaugeView)findViewById(R.id.speedLeftGauge));
+		gaugeRight = ((GaugeView)findViewById(R.id.speedRightGauge));
+		
+		heldButtons = new boolean[4];
 	}
 	
 	@Override
@@ -49,11 +68,20 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 		
 		// Set speed to 0
 		speedControl.setProgress(0);
-		speedGauge.setTargetValue(0);
+		gaugeLeft.setTargetValue(0);
+		gaugeRight.setTargetValue(0);
+	    stopped = true;
+	    setDrivingState();
+	    lastTimeUpdate = 0;
 		
 		// Setup TCP communication channel with thumper
-		commChannel = new TcpCommunicationChannel(this);
+//		commChannel = new TcpCommunicationChannel(this);
+	    commChannel = new FakeCommunicationChannel();
 		
+        for (int i = 0; i < 4; i++) {
+    		heldButtons[i] = false;
+        }
+        
 		// Get current status of thumper
 		getThumperStatus();
 	}
@@ -77,33 +105,17 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 		
 		// Close the communication channel
 		commChannel.close();
+		
+        for (int i = 0; i < 4; i++) {
+    		heldButtons[i] = false;
+        }
+		
+		sendStop();
+		stopped = true;
+		setDrivingState();
 	}
-
-	private void populateStatusView(ThumperStatus status) {		
-		// Battery voltage
-		double voltage = status.getBatteryVoltage();
-		Log.i(TAG, "Battery voltage = " + voltage);
-		int percentage = (int)(100 * (voltage - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE));
-		batteryVoltageGauge.setTargetValue(percentage);
-	}
-
-	public void onForward(View v) {
-		Log.i(TAG, "Forward");
-		ThumperCommand command = new ThumperCommand();
-		command.setMotorSpeed(Side.LEFT, (int)((MAX_SPEED * speedControl.getProgress())/100));
-		command.setMotorSpeed(Side.RIGHT, (int)((MAX_SPEED * speedControl.getProgress())/100));
-		commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
-			@Override
-			public void onStatusReady(ThumperStatus status) {
-				if (status != null) {
-					populateStatusView(status);
-				}
-			}
-		});
-	}
-
-	public void onStop(View v) {
-		Log.i(TAG, "Stop");
+	
+	private void sendStop() {
 		ThumperCommand command = new ThumperCommand();
 		command.setMotorSpeed(Side.LEFT, 0);
 		command.setMotorSpeed(Side.RIGHT, 0);
@@ -117,6 +129,18 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 		});
 	}
 
+	private void populateStatusView(ThumperStatus status) {		
+		// Battery Voltage
+		double voltage = status.getBatteryVoltage();
+		TextView view = (TextView)findViewById(R.id.txtBatteryVoltage);
+		view.setText(voltage + "V");
+		if (voltage < BATTERY_THRESHOLD) {
+			view.setTextColor(Color.RED);
+		} else {
+			view.setTextColor(Color.GREEN);
+		}	
+	}
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 
@@ -127,86 +151,182 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	    int index = MotionEventCompat.getActionIndex(event);
 
 	    // Get location of hold controls
-        int[][] resources = new int[3][3];
-        resources[0][0] = R.id.imgForwardLeft;
-        resources[0][1] = R.id.imgForward;
-        resources[0][2] = R.id.imgForwardRight;
-        resources[1][0] = R.id.imgLeft;
-        resources[1][1] = R.id.imgStop;
-        resources[1][2] = R.id.imgRight;
-        resources[2][0] = R.id.imgReverseLeft;
-        resources[2][1] = R.id.imgReverse;
-        resources[2][2] = R.id.imgReverseRight;
+        int[] resources = new int[4];
+        resources[FORWARD] = R.id.imgForward;
+        resources[LEFT] = R.id.imgLeft;
+        resources[RIGHT] = R.id.imgRight;
+        resources[REVERSE] = R.id.imgReverse;
 
-        int[][] drawables_not_pressed = new int[3][3];
-        drawables_not_pressed[0][0] = R.drawable.drive_control_forward_left;
-        drawables_not_pressed[0][1] = R.drawable.drive_control_forward;
-        drawables_not_pressed[0][2] = R.drawable.drive_control_forward_right;
-        drawables_not_pressed[1][0] = R.drawable.drive_control_left;
-        drawables_not_pressed[1][1] = R.drawable.drive_control_stopped;
-        drawables_not_pressed[1][2] = R.drawable.drive_control_right;
-        drawables_not_pressed[2][0] = R.drawable.drive_control_reverse_left;
-        drawables_not_pressed[2][1] = R.drawable.drive_control_reverse;
-        drawables_not_pressed[2][2] = R.drawable.drive_control_reverse_right;
+        int[] drawables_not_pressed = new int[4];
+        drawables_not_pressed[FORWARD] = R.drawable.drive_control_forward;
+        drawables_not_pressed[LEFT] = R.drawable.drive_control_left;
+        drawables_not_pressed[RIGHT] = R.drawable.drive_control_right;
+        drawables_not_pressed[REVERSE] = R.drawable.drive_control_reverse;
 
-        int[][] drawables_pressed = new int[3][3];
-        drawables_pressed[0][0] = R.drawable.drive_control_forward_left_held;
-        drawables_pressed[0][1] = R.drawable.drive_control_forward_held;
-        drawables_pressed[0][2] = R.drawable.drive_control_forward_right_held;
-        drawables_pressed[1][0] = R.drawable.drive_control_left_held;
-        drawables_pressed[1][1] = R.drawable.drive_control_stop;
-        drawables_pressed[1][2] = R.drawable.drive_control_right_held;
-        drawables_pressed[2][0] = R.drawable.drive_control_reverse_left_held;
-        drawables_pressed[2][1] = R.drawable.drive_control_reverse_held;
-        drawables_pressed[2][2] = R.drawable.drive_control_reverse_right_held;
+        int[] drawables_pressed = new int[4];
+        drawables_pressed[FORWARD] = R.drawable.drive_control_forward_held;
+        drawables_pressed[LEFT] = R.drawable.drive_control_left_held;
+        drawables_pressed[RIGHT] = R.drawable.drive_control_right_held;
+        drawables_pressed[REVERSE] = R.drawable.drive_control_reverse_held;
 
-        ImageView[][] controls = new ImageView[3][3];
-        Rect rects[][] = new Rect[3][3];
+        ImageView[] controls = new ImageView[4];
+        Rect rects[] = new Rect[4];
 
         int[] coord = new int[2];
-        for (int row = 0; row < 3; row++) {
-        	for (int col = 0; col < 3; col++) {
-        		controls[row][col] = ((ImageView)findViewById(resources[row][col]));
-        		controls[row][col].getLocationOnScreen(coord);
-        		rects[row][col] = new Rect(coord[0], coord[1], coord[0] + controls[row][col].getWidth(), coord[1] + controls[row][col].getHeight());
-        	}
+        for (int i = 0; i < 4; i++) {
+    		controls[i] = ((ImageView)findViewById(resources[i]));
+    		controls[i].getLocationOnScreen(coord);
+    		rects[i] = new Rect(coord[0], coord[1], coord[0] + controls[i].getWidth(), coord[1] + controls[i].getHeight());
         }
-
+        
         // Get current pointer position
         int xPos = (int)MotionEventCompat.getX(event, index);
         int yPos = (int)MotionEventCompat.getY(event, index);
-
+        
         // Determine which hold controls are pressed and released
 	    switch (action) {
 	        case MotionEvent.ACTION_DOWN:	// Single pointer
-	        case MotionEvent.ACTION_MOVE:
-	            for (int row = 0; row < 3; row++) {
-	            	for (int col = 0; col < 3; col++) {
-	            		if (rects[row][col].contains(xPos, yPos)) {
-	            			controls[row][col].setImageResource(drawables_pressed[row][col]);
-	    	            } else {
-	    	            	controls[row][col].setImageResource(drawables_not_pressed[row][col]);
-	    	            }
-	            	}
+	            for (int i = 0; i < 4; i++) {
+            		if (rects[i].contains(xPos, yPos)) {
+            			//controls[i].setImageResource(drawables_pressed[i]);
+            			heldButtons[i] = true;
+    	            }
 	            }
 	            break;
 	        case MotionEvent.ACTION_UP:		// Single pointer
-	            for (int row = 0; row < 3; row++) {
-	            	for (int col = 0; col < 3; col++) {
-	            		if (rects[row][col].contains(xPos, yPos)) {
-	            			controls[row][col].setImageResource(drawables_not_pressed[row][col]);
-	    	            }
-	            	}
+	            for (int i = 0; i < 4; i++) {
+            		heldButtons[i] = false;
+	            }
+	        	break;
+	        case MotionEvent.ACTION_MOVE:
+	            for (int i = 0; i < 4; i++) {
+            		if (rects[i].contains(xPos, yPos)) {
+            			heldButtons[i] = true;
+    	            }
+	            }
+	        	break;
+	        case MotionEvent.ACTION_POINTER_DOWN:	// Multi pointer goes down
+	            for (int i = 0; i < 4; i++) {
+            		if (rects[i].contains(xPos, yPos)) {
+            			heldButtons[i] = true;
+    	            }
+	            }
+	        	break;
+	        case MotionEvent.ACTION_POINTER_UP:		// Multi pointer goes up
+	            for (int i = 0; i < 4; i++) {
+            		if (rects[i].contains(xPos, yPos)) {
+            			heldButtons[i] = false;
+    	            }
 	            }
 	        	break;
 	    }
-
+        
+	    // Visual indication
+        for (int i = 0; i < 4; i++) {
+    		if (heldButtons[i]) {
+    			controls[i].setImageResource(drawables_pressed[i]);
+            } else {
+            	controls[i].setImageResource(drawables_not_pressed[i]);
+            }
+        }
+        
+        driveThumper();
+	    
 	    return true;
+	}
+	
+	private void driveThumper() {
+		// Check if any button is held
+		boolean anyIsHeld = false;
+        for (int i = 0; i < 4; i++) {
+    		if (heldButtons[i]) {
+    			anyIsHeld = true;
+            }
+        }
+		
+		if (anyIsHeld) {
+			stopped = false;
+			
+			long currentTime = System.currentTimeMillis();
+			long time_delta = currentTime - lastTimeUpdate;
+			
+			if (time_delta >= refreshDelay) {
+				int base_speed = speedControl.getProgress();
+				
+				int left_speed = 0;
+				int right_speed = 0;			
+
+				if (heldButtons[FORWARD] || heldButtons[REVERSE]) {
+					left_speed = base_speed;
+					right_speed = base_speed;
+				}
+				
+				if (heldButtons[LEFT]) {
+					right_speed = right_speed + TURN_SPEED;
+					left_speed = left_speed - TURN_SPEED;
+				}
+				
+				if (heldButtons[RIGHT]) {
+					right_speed = right_speed - TURN_SPEED;
+					left_speed = left_speed + TURN_SPEED;
+				}	
+
+				if (heldButtons[REVERSE]) {
+					right_speed = -right_speed;
+					left_speed = -left_speed;
+				}
+				
+				// Limit drive speed
+				left_speed = Math.min(MAX_SPEED, left_speed);	
+				right_speed = Math.min(MAX_SPEED, right_speed);	
+				left_speed = Math.max(-MAX_SPEED, left_speed);	
+				right_speed = Math.max(-MAX_SPEED, right_speed);	
+				
+				gaugeLeft.setTargetValue(Math.abs(100*left_speed/MAX_SPEED));
+				gaugeRight.setTargetValue(Math.abs(100*right_speed/MAX_SPEED));
+								
+				ThumperCommand command = new ThumperCommand();
+				command.setMotorSpeed(Side.LEFT, left_speed);
+				command.setMotorSpeed(Side.RIGHT, right_speed);
+				commChannel.sendThumperCommand(this, command, new IThumperStatusReady() {
+					@Override
+					public void onStatusReady(ThumperStatus status) {
+						double voltage = status.getBatteryVoltage();
+						TextView view = (TextView)findViewById(R.id.txtBatteryVoltage);
+						view.setText(voltage + "V");
+						if (voltage < BATTERY_THRESHOLD) {
+							view.setTextColor(Color.RED);
+						} else {
+							view.setTextColor(Color.GREEN);
+						}						
+					}
+				});
+				
+				lastTimeUpdate = System.currentTimeMillis();
+			}
+		} else {
+			if (!stopped) {
+				sendStop();
+				stopped = true;
+				((GaugeView)findViewById(R.id.speedLeftGauge)).setTargetValue(0);
+				((GaugeView)findViewById(R.id.speedRightGauge)).setTargetValue(0);
+			} // else maybe status update every x seconds ?
+		}
+		setDrivingState();
+	}
+	
+	private void setDrivingState() {
+		if (stopped) {
+			((TextView)this.findViewById(R.id.txtIsStopped)).setText("Stopped");
+			((TextView)this.findViewById(R.id.txtIsStopped)).setTextColor(Color.RED);
+		} else {
+			((TextView)this.findViewById(R.id.txtIsStopped)).setText("Driving");
+			((TextView)this.findViewById(R.id.txtIsStopped)).setTextColor(Color.GREEN);
+		}
 	}
 	
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		speedGauge.setTargetValue(speedControl.getProgress());
 	}
 
 	@Override
