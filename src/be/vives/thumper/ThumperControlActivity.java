@@ -30,7 +30,7 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	private GaugeView gaugeRight;
 
 	private static final int MAX_SPEED = 200;
-	private static final int TURN_SPEED = 50;
+	private static final int TURN_SPEED = 80;
 	
 	private boolean heldButtons[];
 
@@ -192,7 +192,6 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 	        case MotionEvent.ACTION_DOWN:	// Single pointer
 	            for (int i = 0; i < 4; i++) {
             		if (rects[i].contains(xPos, yPos)) {
-            			//controls[i].setImageResource(drawables_pressed[i]);
             			heldButtons[i] = true;
     	            }
 	            }
@@ -266,13 +265,13 @@ public class ThumperControlActivity extends Activity implements SeekBar.OnSeekBa
 				}
 				
 				if (heldButtons[LEFT]) {
-					right_speed = right_speed + TURN_SPEED;
-					left_speed = left_speed - TURN_SPEED;
+					right_speed = right_speed - TURN_SPEED;
+					left_speed = left_speed + TURN_SPEED;
 				}
 				
 				if (heldButtons[RIGHT]) {
-					right_speed = right_speed - TURN_SPEED;
-					left_speed = left_speed + TURN_SPEED;
+					right_speed = right_speed + TURN_SPEED;
+					left_speed = left_speed - TURN_SPEED;
 				}	
 
 				if (heldButtons[REVERSE]) {

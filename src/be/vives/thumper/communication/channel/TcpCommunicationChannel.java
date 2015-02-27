@@ -51,6 +51,9 @@ public class TcpCommunicationChannel implements ICommunicationChannel {
 			socket.close();
 			mBufferOut.close();
 			mBufferIn.close();
+			socket = null;
+			mBufferOut = null;
+			mBufferIn = null;
 		} catch (IOException e) {
 			Log.e(TAG, "Socket close giving error " + e);
 		}
